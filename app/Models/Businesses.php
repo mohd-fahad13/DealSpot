@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Business extends Model
+class Businesses extends Model
 {
     protected $fillable = [
         'owner_id',
@@ -15,6 +15,7 @@ class Business extends Model
         'logo_url',
         'category_id',
         'is_verified',
+        'status',
     ];
 
     public function owner()
@@ -29,7 +30,7 @@ class Business extends Model
 
     public function discounts()
     {
-        return $this->hasMany(Discount::class);
+        return $this->hasMany(Discount::class, 'business_id');
     }
 
     public function reviews()
@@ -39,6 +40,7 @@ class Business extends Model
 
     public function locations()
     {
-        return $this->belongsToMany(BusinessLocation::class, 'business_locations');
+        return $this->hasMany(BusinessLocation::class, 'business_id');
     }
+
 }

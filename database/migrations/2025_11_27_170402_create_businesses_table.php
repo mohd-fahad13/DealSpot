@@ -29,6 +29,7 @@ return new class extends Migration
             $table->text('description')->nullable();
             $table->string('logo_url')->nullable();
             $table->boolean('is_verified')->default(false);
+            $table->enum('status', ['active', 'inactive'])->default('active')->after('is_verified');
             $table->timestamps();
         });
     }

@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('discounts', function (Blueprint $table) {
             $table->id();
             $table->foreignId('business_id')->constrained()->onDelete('cascade');
+            // $table->foreignId('location_ids')->constrained()->onDelete('cascade')->after('business_id');
             $table->string('title');
             $table->text('description')->nullable();
             $table->decimal('discount_value', 8, 2);

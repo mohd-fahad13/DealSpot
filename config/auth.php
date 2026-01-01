@@ -38,7 +38,12 @@ return [
     'guards' => [
         'web' => [
             'driver' => 'session',
-            'provider' => 'users',
+            'provider' => 'business_owners',
+            // 'provider' => 'users',
+        ],
+        'business_owner' => [
+            'driver' => 'session',
+            'provider' => 'business_owners',
         ],
     ],
 
@@ -63,6 +68,11 @@ return [
         'users' => [
             'driver' => 'eloquent',
             'model' => env('AUTH_MODEL', App\Models\User::class),
+        ],
+
+        'business_owners' => [
+            'driver' => 'eloquent',
+            'model' => App\Models\BusinessOwner::class,
         ],
 
         // 'users' => [

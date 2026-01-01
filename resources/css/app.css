@@ -9,3 +9,524 @@
     --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
         'Segoe UI Symbol', 'Noto Color Emoji';
 }
+
+
+/* @extends('layouts.app')
+
+@section('content')
+<div class="container-fluid py-4">
+    <div class="row justify-content-center">
+        <div class="col-xl-10 col-lg-12">
+            <!-- Header -->
+            <div class="d-flex justify-content-between align-items-center mb-5">
+                <div>
+                    <h1 class="mb-1">
+                        {{ isset($business) ? 'Edit ' . $business->business_name : 'Create New Business' }}
+                    </h1>
+                    <p class="text-muted mb-0">
+                        {{ isset($business) ? 'Update your business details and locations.' : 'Fill in the details to list your business and branches.' }}
+                    </p>
+                </div>
+                <a href="{{ route('business.showAll') }}" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left me-2"></i>Back to Businesses
+                </a>
+            </div>
+
+            <!-- Form Card -->
+            <div class="card shadow-lg border-0">
+                <div class="card-body p-5">
+                    {{-- Errors --}}
+                    @if($errors->any())
+                        <div class="alert alert-danger">
+                            <ul class="mb-0">
+                                @foreach($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    @endif
+
+                    @if(session('success'))
+                        <div class="alert alert-success">{{ session('success') }}</div>
+                    @endif
+
+                    {{-- FORM --}}
+                    <form action="{{ isset($business) ? route('business.update', $business->id) : route('business.store') }}" 
+                          method="POST" 
+                          enctype="multipart/form-data"
+                          id="businessForm" novalidate>
+                        @csrf
+                        @if(isset($business))
+                            @method('PUT')
+                        @endif
+
+                        {{-- BUSINESS INFO SECTION --}}
+                        <div class="row mb-5">
+                            <div class="col-lg-8">
+                                {{-- Business Name --}}
+                                <div class="mb-4">
+                                    <label class="form-label fw-bold">Business Name <span class="text-danger">*</span></label>
+                                    <input type="text" 
+                                           name="business_name" 
+                                           class="form-control @error('business_name') is-invalid @enderror"
+                                           value="{{ old('business_name', isset($business) ? $business->business_name : '') }}"
+                                           placeholder="Enter business name" 
+                                           required>
+                                    @error('business_name')
+                                        <div class="invalid-feedback d-block">{{ $message }}</div>
+                                    @enderror
+                                </div>
+
+                                {{-- Email --}}
+                                <div class="mb-4">
+                                    <label class="form-label fw-bold">Email</label>
+                                    <input type="email" 
+                                           name="email" 
+                                           class="form-control @error('email') is-invalid @enderror"
+                                           value="{{ old('email', isset($business) ? $business->email : '') }}"
+                                           placeholder="business@example.com">
+                                    @error('email')
+                                        <div class="invalid-feedback d-block">{{ $message }}</div>
+                                    @enderror
+                                </div>
+
+                                {{-- Phone --}}
+                                <div class="mb-4">
+                                    <label class="form-label fw-bold">Phone</label>
+                                    <input type="text" 
+                                           name="phone" 
+                                           class="form-control @error('phone') is-invalid @enderror"
+                                           value="{{ old('phone', isset($business) ? $business->phone : '') }}"
+                                           placeholder="Enter phone number">
+                                    @error('phone')
+                                        <div class="invalid-feedback d-block">{{ $message }}</div>
+                                    @enderror
+                                </div>
+
+                                {{-- Category --}}
+                                <div class="mb-4">
+                                    <label class="form-label fw-bold">Category</label>
+                                    <select name="category_id" class="form-select @error('category_id') is-invalid @enderror">
+                                        <option value="">-- Select Category --</option>
+                                        @foreach($categories ?? [] as $category)
+                                            <option value="{{ $category->id }}" 
+                                                    {{ old('category_id', isset($business) ? $business->category_id : '') == $category->id ? 'selected' : '' }}>
+                                                {{ $category->name }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                    @error('category_id')
+                                        <div class="invalid-feedback d-block">{{ $message }}</div>
+                                    @enderror
+                                </div>
+
+                                {{-- Description --}}
+                                <div class="mb-4">
+                                    <label class="form-label fw-bold">Description</label>
+                                    <textarea name="description" 
+                                              class="form-control @error('description') is-invalid @enderror" 
+                                              rows="4"
+                                              placeholder="Describe your business...">{{ old('description', isset($business) ? $business->description : '') }}</textarea>
+                                    @error('description')
+                                        <div class="invalid-feedback d-block">{{ $message }}</div>
+                                    @enderror
+                                </div>
+
+                                {{-- Status --}}
+                                <div class="mb-4">
+                                    <label class="form-label fw-bold">Status <span class="text-danger">*</span></label>
+                                    <select name="status" class="form-select @error('status') is-invalid @enderror" required>
+                                        <option value="active" {{ old('status', isset($business) ? $business->status : 'active') == 'active' ? 'selected' : '' }}>Active</option>
+                                        <option value="inactive" {{ old('status', isset($business) ? $business->status : '') == 'inactive' ? 'selected' : '' }}>Inactive</option>
+                                    </select>
+                                    @error('status')
+                                        <div class="invalid-feedback d-block">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                            </div>
+
+                            {{-- Logo Upload --}}
+                            <div class="col-lg-4">
+                                <div class="card h-100 border-dashed" style="border: 2px dashed #dee2e6;">
+                                    <div class="card-body text-center p-4">
+                                        <i class="bi bi-image fs-1 text-muted mb-3"></i>
+                                        <h6>Business Logo</h6>
+                                        <p class="text-muted small mb-4">JPG, PNG (Max 4MB)</p>
+                                        
+                                        {{-- Current Logo Preview --}}
+                                        @if(isset($business) && $business->logo_url)
+                                            <div class="mb-3">
+                                                <img src="{{ Storage::url($business->logo_url) }}" 
+                                                     alt="Current Logo" 
+                                                     class="img-fluid rounded shadow-sm mb-2"
+                                                     style="max-height: 150px; object-fit: cover;">
+                                                <small class="text-muted d-block">Current logo</small>
+                                            </div>
+                                        @endif
+                                        
+                                        <input type="file" 
+                                               name="logo_file" 
+                                               class="form-control @error('logo_file') is-invalid @enderror"
+                                               accept="image/*"
+                                               id="logoInput"
+                                               {{ !isset($business) ? 'required' : '' }}>
+                                        @error('logo_file')
+                                            <div class="invalid-feedback d-block">{{ $message }}</div>
+                                        @enderror
+                                        
+                                        {{-- Preview Image --}}
+                                        <img id="logoPreview" style="max-height: 120px; margin-top: 1rem; display: none;" class="img-fluid rounded">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {{-- LOCATIONS SECTION --}}
+                        <div class="card mb-5">
+                            <div class="card-header bg-primary text-white">
+                                <h5 class="mb-0">
+                                    <i class="bi bi-geo-alt me-2"></i>
+                                    Business Locations 
+                                    <span class="badge bg-light text-dark ms-2">
+                                        {{ isset($business) && $business->locations ? $business->locations->count() : 1 }}
+                                    </span>
+                                </h5>
+                            </div>
+                            <div class="card-body p-0">
+                                <div id="locationsContainer">
+                                    @if(isset($business) && $business->locations && $business->locations->count() > 0)
+                                        {{-- Edit Mode: Show existing locations --}}
+                                        @foreach($business->locations as $index => $location)
+                                            <div class="location-row p-4 border-bottom" data-index="{{ $index }}">
+                                                <div class="row align-items-end">
+                                                    <div class="col-md-3">
+                                                        <label class="form-label fw-bold">Branch Name <span class="text-danger">*</span></label>
+                                                        <input type="text" 
+                                                               name="locations[{{ $index }}][branch_name]" 
+                                                               class="form-control @error('locations.'.$index.'.branch_name') is-invalid @enderror"
+                                                               value="{{ old('locations.'.$index.'.branch_name', $location->branch_name) }}"
+                                                               placeholder="Main Branch"
+                                                               required>
+                                                        @error('locations.'.$index.'.branch_name')
+                                                            <div class="invalid-feedback d-block">{{ $message }}</div>
+                                                        @enderror
+                                                    </div>
+                                                    <div class="col-md-3">
+                                                        <label class="form-label fw-bold">Phone</label>
+                                                        <input type="text" 
+                                                               name="locations[{{ $index }}][phone]" 
+                                                               class="form-control @error('locations.'.$index.'.phone') is-invalid @enderror"
+                                                               value="{{ old('locations.'.$index.'.phone', $location->phone) }}"
+                                                               placeholder="Phone number">
+                                                        @error('locations.'.$index.'.phone')
+                                                            <div class="invalid-feedback d-block">{{ $message }}</div>
+                                                        @enderror
+                                                    </div>
+                                                    <div class="col-md-3">
+                                                        <label class="form-label fw-bold">Email</label>
+                                                        <input type="email" 
+                                                               name="locations[{{ $index }}][email]" 
+                                                               class="form-control @error('locations.'.$index.'.email') is-invalid @enderror"
+                                                               value="{{ old('locations.'.$index.'.email', $location->email) }}"
+                                                               placeholder="Email">
+                                                        @error('locations.'.$index.'.email')
+                                                            <div class="invalid-feedback d-block">{{ $message }}</div>
+                                                        @enderror
+                                                    </div>
+                                                    <div class="col-md-3">
+                                                        <div class="form-check mt-4">
+                                                            <input type="checkbox" 
+                                                                   name="locations[{{ $index }}][is_primary]" 
+                                                                   class="form-check-input"
+                                                                   id="primary_{{ $index }}"
+                                                                   value="1" 
+                                                                   {{ old('locations.'.$index.'.is_primary', $location->is_primary) ? 'checked' : '' }}>
+                                                            <label class="form-check-label" for="primary_{{ $index }}">
+                                                                Primary Location
+                                                            </label>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                
+                                                {{-- Hidden ID for updating --}}
+                                                <input type="hidden" name="locations[{{ $index }}][id]" value="{{ $location->id }}">
+                                                
+                                                {{-- Address Details --}}
+                                                <div class="row mt-3">
+                                                    <div class="col-md-8">
+                                                        <label class="form-label fw-bold">Address <span class="text-danger">*</span></label>
+                                                        <input type="text" 
+                                                               name="locations[{{ $index }}][address]" 
+                                                               class="form-control @error('locations.'.$index.'.address') is-invalid @enderror"
+                                                               value="{{ old('locations.'.$index.'.address', $location->address) }}"
+                                                               placeholder="Street address"
+                                                               required>
+                                                        @error('locations.'.$index.'.address')
+                                                            <div class="invalid-feedback d-block">{{ $message }}</div>
+                                                        @enderror
+                                                    </div>
+                                                    <div class="col-md-4">
+                                                        <label class="form-label fw-bold">Postal Code <span class="text-danger">*</span></label>
+                                                        <input type="text" 
+                                                               name="locations[{{ $index }}][postal_code]" 
+                                                               class="form-control @error('locations.'.$index.'.postal_code') is-invalid @enderror"
+                                                               value="{{ old('locations.'.$index.'.postal_code', $location->postal_code) }}"
+                                                               placeholder="12345"
+                                                               required>
+                                                        @error('locations.'.$index.'.postal_code')
+                                                            <div class="invalid-feedback d-block">{{ $message }}</div>
+                                                        @enderror
+                                                    </div>
+                                                </div>
+                                                
+                                                <div class="row mt-3">
+                                                    <div class="col-md-4">
+                                                        <label class="form-label fw-bold">City <span class="text-danger">*</span></label>
+                                                        <input type="text" 
+                                                               name="locations[{{ $index }}][city]" 
+                                                               class="form-control @error('locations.'.$index.'.city') is-invalid @enderror"
+                                                               value="{{ old('locations.'.$index.'.city', $location->city) }}"
+                                                               placeholder="New York"
+                                                               required>
+                                                        @error('locations.'.$index.'.city')
+                                                            <div class="invalid-feedback d-block">{{ $message }}</div>
+                                                        @enderror
+                                                    </div>
+                                                    <div class="col-md-4">
+                                                        <label class="form-label fw-bold">State <span class="text-danger">*</span></label>
+                                                        <input type="text" 
+                                                               name="locations[{{ $index }}][state]" 
+                                                               class="form-control @error('locations.'.$index.'.state') is-invalid @enderror"
+                                                               value="{{ old('locations.'.$index.'.state', $location->state) }}"
+                                                               placeholder="New York"
+                                                               required>
+                                                        @error('locations.'.$index.'.state')
+                                                            <div class="invalid-feedback d-block">{{ $message }}</div>
+                                                        @enderror
+                                                    </div>
+                                                    <div class="col-md-4">
+                                                        <label class="form-label fw-bold">Country <span class="text-danger">*</span></label>
+                                                        <input type="text" 
+                                                               name="locations[{{ $index }}][country]" 
+                                                               class="form-control @error('locations.'.$index.'.country') is-invalid @enderror"
+                                                               value="{{ old('locations.'.$index.'.country', $location->country) }}"
+                                                               placeholder="United States"
+                                                               required>
+                                                        @error('locations.'.$index.'.country')
+                                                            <div class="invalid-feedback d-block">{{ $message }}</div>
+                                                        @enderror
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        @endforeach
+                                    @else
+                                        {{-- Create Mode: Show single empty location --}}
+                                        <div class="location-row p-4 border-bottom" data-index="0">
+                                            <div class="row align-items-end">
+                                                <div class="col-md-3">
+                                                    <label class="form-label fw-bold">Branch Name <span class="text-danger">*</span></label>
+                                                    <input type="text" 
+                                                           name="locations[0][branch_name]" 
+                                                           class="form-control @error('locations.0.branch_name') is-invalid @enderror"
+                                                           value="{{ old('locations.0.branch_name') }}"
+                                                           placeholder="Main Branch"
+                                                           required>
+                                                    @error('locations.0.branch_name')
+                                                        <div class="invalid-feedback d-block">{{ $message }}</div>
+                                                    @enderror
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <label class="form-label fw-bold">Phone</label>
+                                                    <input type="text" 
+                                                           name="locations[0][phone]" 
+                                                           class="form-control @error('locations.0.phone') is-invalid @enderror"
+                                                           value="{{ old('locations.0.phone') }}"
+                                                           placeholder="Phone number">
+                                                    @error('locations.0.phone')
+                                                        <div class="invalid-feedback d-block">{{ $message }}</div>
+                                                    @enderror
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <label class="form-label fw-bold">Email</label>
+                                                    <input type="email" 
+                                                           name="locations[0][email]" 
+                                                           class="form-control @error('locations.0.email') is-invalid @enderror"
+                                                           value="{{ old('locations.0.email') }}"
+                                                           placeholder="Email">
+                                                    @error('locations.0.email')
+                                                        <div class="invalid-feedback d-block">{{ $message }}</div>
+                                                    @enderror
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <div class="form-check mt-4">
+                                                        <input type="checkbox" 
+                                                               name="locations[0][is_primary]" 
+                                                               class="form-check-input"
+                                                               id="primary_0"
+                                                               value="1" 
+                                                               checked>
+                                                        <label class="form-check-label" for="primary_0">
+                                                            Primary Location
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            {{-- Address Details --}}
+                                            <div class="row mt-3">
+                                                <div class="col-md-8">
+                                                    <label class="form-label fw-bold">Address <span class="text-danger">*</span></label>
+                                                    <input type="text" 
+                                                           name="locations[0][address]" 
+                                                           class="form-control @error('locations.0.address') is-invalid @enderror"
+                                                           value="{{ old('locations.0.address') }}"
+                                                           placeholder="Street address"
+                                                           required>
+                                                    @error('locations.0.address')
+                                                        <div class="invalid-feedback d-block">{{ $message }}</div>
+                                                    @enderror
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <label class="form-label fw-bold">Postal Code <span class="text-danger">*</span></label>
+                                                    <input type="text" 
+                                                           name="locations[0][postal_code]" 
+                                                           class="form-control @error('locations.0.postal_code') is-invalid @enderror"
+                                                           value="{{ old('locations.0.postal_code') }}"
+                                                           placeholder="12345"
+                                                           required>
+                                                    @error('locations.0.postal_code')
+                                                        <div class="invalid-feedback d-block">{{ $message }}</div>
+                                                    @enderror
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="row mt-3">
+                                                <div class="col-md-4">
+                                                    <label class="form-label fw-bold">City <span class="text-danger">*</span></label>
+                                                    <input type="text" 
+                                                           name="locations[0][city]" 
+                                                           class="form-control @error('locations.0.city') is-invalid @enderror"
+                                                           value="{{ old('locations.0.city') }}"
+                                                           placeholder="New York"
+                                                           required>
+                                                    @error('locations.0.city')
+                                                        <div class="invalid-feedback d-block">{{ $message }}</div>
+                                                    @enderror
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <label class="form-label fw-bold">State <span class="text-danger">*</span></label>
+                                                    <input type="text" 
+                                                           name="locations[0][state]" 
+                                                           class="form-control @error('locations.0.state') is-invalid @enderror"
+                                                           value="{{ old('locations.0.state') }}"
+                                                           placeholder="New York"
+                                                           required>
+                                                    @error('locations.0.state')
+                                                        <div class="invalid-feedback d-block">{{ $message }}</div>
+                                                    @enderror
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <label class="form-label fw-bold">Country <span class="text-danger">*</span></label>
+                                                    <input type="text" 
+                                                           name="locations[0][country]" 
+                                                           class="form-control @error('locations.0.country') is-invalid @enderror"
+                                                           value="{{ old('locations.0.country') }}"
+                                                           placeholder="United States"
+                                                           required>
+                                                    @error('locations.0.country')
+                                                        <div class="invalid-feedback d-block">{{ $message }}</div>
+                                                    @enderror
+                                                </div>
+                                            </div>
+                                        </div>
+                                    @endif
+                                </div>
+                                
+                                {{-- Add Location Button --}}
+                                <div class="p-4 border-top bg-light">
+                                    <button type="button" class="btn btn-outline-primary" id="addLocation">
+                                        <i class="bi bi-plus-circle me-2"></i>Add Location
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        {{-- Submit Buttons --}}
+                        <div class="d-flex gap-3 justify-content-end pt-4">
+                            <a href="{{ route('business.showAll') }}" class="btn btn-outline-secondary">
+                                Cancel
+                            </a>
+                            <button type="submit" class="btn btn-primary px-5">
+                                <i class="bi bi-check-circle me-2"></i>
+                                {{ isset($business) ? 'Update Business' : 'Create Business' }}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script>
+$(document).ready(function() {
+    let locationIndex = {{ isset($business) && $business->locations ? $business->locations->count() : 1 }};
+
+    // Logo Preview
+    $('#logoInput').on('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                $('#logoPreview').attr('src', event.target.result).show();
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+
+    // Add Location Button
+    $('#addLocation').click(function() {
+        locationIndex++;
+        const $firstLocation = $('.location-row:first').clone(true);
+        
+        // Update all indices
+        $firstLocation.find('input, select, textarea').each(function() {
+            const $el = $(this);
+            const name = $el.attr('name');
+            const id = $el.attr('id');
+            
+            if (name) {
+                $el.attr('name', name.replace(/\[\d+\]/g, `[${locationIndex}]`));
+                $el.val('');
+                $el.removeClass('is-invalid');
+            }
+            if (id) {
+                $el.attr('id', id.replace(/_\d+$/, `_${locationIndex}`));
+            }
+        });
+        
+        // Update label references
+        $firstLocation.find('label').each(function() {
+            const $label = $(this);
+            const forAttr = $label.attr('for');
+            if (forAttr) {
+                $label.attr('for', forAttr.replace(/_\d+$/, `_${locationIndex}`));
+            }
+        });
+        
+        $firstLocation.attr('data-index', locationIndex);
+        $('#locationsContainer').append($firstLocation);
+    });
+});
+</script>
+
+<style>
+.border-dashed {
+    border: 2px dashed #dee2e6!important;
+}
+</style>
+
+@endsection
+
+this is my old code  */
